@@ -340,21 +340,23 @@ with st.sidebar:
     **What is Thalassemia?**
     Thalassemia is a blood disorder that affects the heart's ability to pump blood effectively.
     
-    **Types in Heart Disease Context:**
-    - **0: Unknown** - No thalassemia test performed
-    - **1: Fixed Defect** - Permanent blood flow reduction to heart muscle
-    - **2: Normal** - Normal blood flow pattern
-    - **3: Reversible Defect** - Temporary blood flow reduction during stress
+    **Value Descriptions:**
+    - **0: Unknown/Normal** - No thalassemia detected or test not performed
+    - **1: Fixed Defect** - Permanent blood flow reduction to heart muscle (scar tissue)
+    - **2: Normal Flow** - Normal blood flow pattern during stress test
+    - **3: Reversible Defect** - Temporary blood flow reduction during stress (blockage)
     
-    **Impact on Heart Health:**
-    - Fixed defects indicate permanent heart muscle damage
-    - Reversible defects suggest coronary artery disease
-    - Normal results indicate healthy blood flow
+    **Clinical Significance:**
+    - **Value 0:** Baseline/normal condition
+    - **Value 1:** Indicates previous heart attack or permanent damage
+    - **Value 2:** Healthy heart with good blood circulation
+    - **Value 3:** Suggests coronary artery disease requiring attention
     
-    **Key Points:**
-    - Higher values (2-3) generally indicate better outcomes
-    - Fixed defects (1) are associated with higher heart disease risk
-    - This test is often done with nuclear imaging
+    **Risk Assessment:**
+    - Values 1 & 3: Higher heart disease risk
+    - Values 0 & 2: Lower heart disease risk
+    - Fixed defects (1) indicate established heart damage
+    - Reversible defects (3) suggest treatable blockages
     """)
 
 # Main content in columns
@@ -402,7 +404,7 @@ with col1:
     
     with adv_col2:
         thal = st.selectbox("🫀 Thalassemia", options=[0, 1, 2, 3], 
-                           format_func=lambda x: ["Unknown", "Fixed Defect", "Normal", "Reversible Defect"][x])
+                           format_func=lambda x: ["Unknown/Normal", "Fixed Defect", "Normal Flow", "Reversible Defect"][x])
 
 with col2:
     st.markdown('<h2 class="section-header">📈 Risk Assessment</h2>', unsafe_allow_html=True)
