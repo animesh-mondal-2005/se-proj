@@ -4,7 +4,6 @@ import joblib
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-# Page configuration
 st.set_page_config(
     page_title="Heart Disease Predictor",
     page_icon="❤️",
@@ -12,7 +11,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better styling
 st.markdown("""
 <style>
     .main-header {
@@ -59,7 +57,6 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Load model
 @st.cache_resource
 def load_model():
     try:
@@ -70,10 +67,8 @@ def load_model():
 
 model = load_model()
 
-# Header
 st.markdown('<h1 class="main-header">❤️ Heart Disease Predictor</h1>', unsafe_allow_html=True)
 
-# Introduction
 st.markdown("""
 <div class="info-box">
     <h3>🩺 About This Tool</h3>
@@ -82,7 +77,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar with information
 with st.sidebar:
     st.markdown("### 📋 Parameter Guide")
     st.markdown("""
@@ -112,13 +106,11 @@ with st.sidebar:
     - 3: Reversible Defect
     """)
 
-# Main content in columns
 col1, col2 = st.columns([2, 1])
 
 with col1:
     st.markdown('<h2 class="section-header">📊 Patient Information</h2>', unsafe_allow_html=True)
-    
-    # Demographics
+
     demo_col1, demo_col2 = st.columns(2)
     with demo_col1:
         age = st.number_input("👤 Age", min_value=18, max_value=100, value=50, help="Patient's age in years")
@@ -129,8 +121,7 @@ with col1:
                          format_func=lambda x: ["Typical Angina", "Atypical Angina", "Non-Anginal Pain", "Asymptomatic"][x])
         fbs = st.selectbox("🍯 Fasting Blood Sugar > 120 mg/dl", options=[0, 1], 
                           format_func=lambda x: "Yes" if x == 1 else "No")
-    
-    # Vital Signs
+
     st.markdown('<h3 class="section-header">🩺 Vital Signs & Lab Results</h3>', unsafe_allow_html=True)
     
     vital_col1, vital_col2 = st.columns(2)
@@ -145,8 +136,7 @@ with col1:
         exang = st.selectbox("🏃 Exercise Induced Angina", options=[0, 1], 
                             format_func=lambda x: "Yes" if x == 1 else "No")
         oldpeak = st.number_input("📉 ST Depression", min_value=0.0, max_value=10.0, value=1.0, step=0.1)
-    
-    # Advanced Parameters
+
     st.markdown('<h3 class="section-header">🔬 Advanced Parameters</h3>', unsafe_allow_html=True)
     
     adv_col1, adv_col2 = st.columns(2)
@@ -161,8 +151,7 @@ with col1:
 
 with col2:
     st.markdown('<h2 class="section-header">📈 Risk Assessment</h2>', unsafe_allow_html=True)
-    
-    # Health tips
+
     st.markdown("""
     ### 💡 Heart Health Tips
     - 🥗 Maintain a balanced diet
@@ -172,7 +161,6 @@ with col2:
     - 💊 Take medications as prescribed
     """)
 
-# Prediction section
 st.markdown('<h2 class="section-header">🎯 Prediction Results</h2>', unsafe_allow_html=True)
 
 predict_col1, predict_col2, predict_col3 = st.columns([1, 2, 1])
@@ -185,12 +173,10 @@ with predict_col2:
             "fbs": fbs, "restecg": restecg, "thalach": thalach, "exang": exang,
             "oldpeak": oldpeak, "slope": slope, "ca": ca, "thal": thal
         }])
-        
-        # Make prediction
+
         try:
             pred = model.predict(sample)[0]
-            
-            # Display results based on raw prediction value
+
             if pred == 1:
                 st.markdown("""
                 <div class="prediction-positive">
@@ -214,7 +200,6 @@ with predict_col2:
         except Exception as e:
             st.error(f"❌ Prediction Error: {str(e)}")
 
-# Footer
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #7f8c8d; margin-top: 2rem;">
