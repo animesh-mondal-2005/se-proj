@@ -2,7 +2,5 @@ streamlit
 pandas
 scikit-learn
 joblib
-speechrecognition
-fpdf
 shap
 matplotlib
