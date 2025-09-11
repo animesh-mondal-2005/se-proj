@@ -101,6 +101,12 @@
 #     - 0: Upsloping
 #     - 1: Flat
 #     - 2: Downsloping
+
+#     **Thalassemia:**
+#     - 0: Unknown/Normal
+#     - 1: Fixed Defect
+#     - 2: Normal Flow
+#     - 3: Reversible Defect
 #     """)
 
 # # Main content in columns
@@ -148,7 +154,7 @@
     
 #     with adv_col2:
 #         thal = st.selectbox("🫀 Thalassemia", options=[0, 1, 2, 3], 
-#                            format_func=lambda x: ["Unknown", "Fixed Defect", "Normal", "Reversible Defect"][x])
+#                            format_func=lambda x: ["Unknown/Normal", "Fixed Defect", "Normal Flow", "Reversible Defect"][x])
 
 # with col2:
 #     st.markdown('<h2 class="section-header">📈 Risk Assessment</h2>', unsafe_allow_html=True)
@@ -206,7 +212,7 @@
 #                 </div>
 #                 """, unsafe_allow_html=True)
                 
-#                 st.error("⚠️ **Important:** This is a screening tool only. Please seek immediate medical attention for proper diagnosis and treatment.")
+#                 st.error("⚠️ **Important:** Please seek immediate medical attention for proper diagnosis and treatment.")
                 
 #             else:
 #                 st.markdown("""
@@ -333,7 +339,10 @@ with st.sidebar:
     - 0: Upsloping
     - 1: Flat
     - 2: Downsloping
-
+    """)
+    
+    st.markdown("### 🫀 Thalassemia Guide")
+    st.markdown("""
     **Thalassemia:**
     - 0: Unknown/Normal
     - 1: Fixed Defect
@@ -391,22 +400,6 @@ with col1:
 with col2:
     st.markdown('<h2 class="section-header">📈 Risk Assessment</h2>', unsafe_allow_html=True)
     
-    # Risk factors visualization
-    risk_factors = []
-    if age > 65: risk_factors.append("Advanced Age")
-    if sex == 1: risk_factors.append("Male Gender")
-    if trestbps > 140: risk_factors.append("High BP")
-    if chol > 240: risk_factors.append("High Cholesterol")
-    if fbs == 1: risk_factors.append("High Blood Sugar")
-    if exang == 1: risk_factors.append("Exercise Angina")
-    
-    if risk_factors:
-        st.markdown("⚠️ **Identified Risk Factors:**")
-        for factor in risk_factors:
-            st.markdown(f"• {factor}")
-    else:
-        st.markdown("✅ **No major risk factors identified**")
-    
     # Health tips
     st.markdown("""
     ### 💡 Heart Health Tips
@@ -444,7 +437,7 @@ with predict_col2:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                st.error("⚠️ **Important:** Please seek immediate medical attention for proper diagnosis and treatment.")
+                st.error("⚠️ **Important:** This is a screening tool only. Please seek immediate medical attention for proper diagnosis and treatment.")
                 
             else:
                 st.markdown("""
