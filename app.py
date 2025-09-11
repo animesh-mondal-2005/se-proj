@@ -391,7 +391,7 @@ with col1:
     with adv_col1:
         slope = st.selectbox("📊 ST Slope", options=[0, 1, 2], 
                             format_func=lambda x: ["Upsloping", "Flat", "Downsloping"][x])
-        ca = st.selectbox("🩻 Number of Major Vessels (0-3)", options=[0, 1, 2, 3])
+        ca = st.selectbox("💓 Number of Major Vessels (0-3)", options=[0, 1, 2, 3])
     
     with adv_col2:
         thal = st.selectbox("🫀 Thalassemia", options=[0, 1, 2, 3], 
