@@ -1,11 +1,10 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import shap
-import matplotlib.pyplot as plt
+import speech_recognition as sr
 
 # ----------------------------
-# Load trained model
+# Load Model
 # ----------------------------
 @st.cache_resource
 def load_model():
@@ -14,102 +13,143 @@ def load_model():
 model = load_model()
 
 # ----------------------------
-# Load dataset for SHAP explainer reference
+# Conversational State
 # ----------------------------
-@st.cache_resource
-def load_data():
-    return pd.read_csv("heart.csv").drop("target", axis=1)
+if "step" not in st.session_state:
+    st.session_state.step = 0
+if "inputs" not in st.session_state:
+    st.session_state.inputs = {}
 
-X_reference = load_data()
-
-# Initialize SHAP explainer
-explainer = shap.TreeExplainer(model)
-
-# ----------------------------
-# Streamlit UI
-# ----------------------------
-st.set_page_config(page_title="Heart Disease Predictor", layout="centered")
-st.title("❤️ Heart Disease Predictor with Explainable AI")
-st.markdown("""
-This system predicts the risk of **heart disease** and explains **why** the model made its prediction using SHAP values.  
-Please provide patient details below:
-""")
-
-# ----------------------------
-# Input fields
-# ----------------------------
-col1, col2 = st.columns(2)
-
-with col1:
-    age = st.number_input("Age", 18, 100, 50)
-    sex = st.selectbox("Sex", ["Male", "Female"])
-    cp = st.selectbox("Chest Pain Type (0=Typical, 1=Atypical, 2=Non-anginal, 3=Asymptomatic)", [0, 1, 2, 3])
-    trestbps = st.number_input("Resting BP (mm Hg)", 80, 200, 120)
-    chol = st.number_input("Cholesterol (mg/dl)", 100, 600, 200)
-    fbs = st.selectbox("Fasting Blood Sugar > 120 mg/dl", [0, 1])
-
-with col2:
-    restecg = st.selectbox("Resting ECG (0=Normal, 1=ST-T abnormality, 2=LVH)", [0, 1, 2])
-    thalach = st.number_input("Max Heart Rate Achieved", 60, 220, 150)
-    exang = st.selectbox("Exercise Induced Angina (0=No, 1=Yes)", [0, 1])
-    oldpeak = st.number_input("ST Depression (oldpeak)", 0.0, 10.0, 1.0, step=0.1)
-    slope = st.selectbox("Slope (0=Upsloping, 1=Flat, 2=Downsloping)", [0, 1, 2])
-    ca = st.selectbox("Number of Major Vessels (0-3)", [0, 1, 2, 3])
-    thal = st.selectbox("Thal (1=Fixed, 2=Normal, 3=Reversible)", [1, 2, 3])
+# Ordered list of questions (map feature → question)
+questions = [
+    ("age", "👤 What is your age?"),
+    ("sex", "⚧️ What is your gender? (Male/Female)"),
+    ("cp", "💢 Chest Pain Type? (0=Typical, 1=Atypical, 2=Non-anginal, 3=Asymptomatic)"),
+    ("trestbps", "🩺 Resting Blood Pressure (mm Hg)?"),
+    ("chol", "🥓 Serum Cholesterol (mg/dl)?"),
+    ("fbs", "🧪 Fasting Blood Sugar > 120 mg/dl? (0=No, 1=Yes)"),
+    ("restecg", "🫀 Resting ECG (0=Normal, 1=ST-T abnormality, 2=LVH)?"),
+    ("thalach", "🏃 Max Heart Rate Achieved?"),
+    ("exang", "😰 Exercise Induced Angina? (0=No, 1=Yes)"),
+    ("oldpeak", "📉 ST Depression (Oldpeak value)?"),
+    ("slope", "📈 Slope (0=Upsloping, 1=Flat, 2=Downsloping)?"),
+    ("ca", "🔍 Number of major vessels (0–3)?"),
+    ("thal", "🧬 Thal (1=Fixed, 2=Normal, 3=Reversible)?")
+]
 
 # ----------------------------
-# Prediction + SHAP Explanation
+# Voice Input Function
 # ----------------------------
-if st.button("🔍 Predict with Explanation"):
-    # Convert categorical values
-    sex_val = 1 if sex == "Male" else 0
+def get_voice_input():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        st.info("🎤 Listening... please speak now.")
+        audio = r.listen(source)
+    try:
+        text = r.recognize_google(audio)
+        st.success(f"You said: {text}")
+        return text
+    except:
+        st.error("❌ Sorry, I could not understand your voice.")
+        return None
 
-    # Prepare input dataframe
-    sample = pd.DataFrame([{
-        "age": age, "sex": sex_val, "cp": cp, "trestbps": trestbps,
-        "chol": chol, "fbs": fbs, "restecg": restecg, "thalach": thalach,
-        "exang": exang, "oldpeak": oldpeak, "slope": slope, "ca": ca, "thal": thal
-    }])
-
-    # Predict
-    prediction = model.predict(sample)[0]
-    probability = model.predict_proba(sample)[0][1]
-
-    # Show result
-    if prediction == 1:
-        st.error(f"⚠️ High Risk of Heart Disease ({probability:.2%})")
+# ----------------------------
+# Personalized Advice
+# ----------------------------
+def give_advice(risk, age, sex):
+    advice = []
+    if risk > 0.7:
+        advice.append("⚠️ High risk detected! Please consult a cardiologist immediately.")
+    elif risk > 0.4:
+        advice.append("⚠️ Moderate risk. Regular check-ups and lifestyle changes recommended.")
     else:
-        st.success(f"✅ Low Risk of Heart Disease ({1-probability:.2%})")
+        advice.append("✅ Low risk. Maintain a healthy lifestyle.")
 
-    # SHAP Explanation
-    st.subheader("🧠 Why this Prediction? (Explainable AI)")
-    shap_values = explainer.shap_values(sample)
-
-    # Handle binary/multi-class safely
-    if isinstance(shap_values, list):
-        shap_values_to_use = shap_values[1]  # Use positive class
+    # Age-based
+    if age > 50:
+        advice.append("🔹 Since you are above 50, focus on regular cardiac checkups.")
     else:
-        shap_values_to_use = shap_values
+        advice.append("🔹 Maintain physical activity and avoid junk food.")
 
-    # Bar chart (Feature importance for this prediction)
-    fig, ax = plt.subplots()
-    shap.summary_plot(shap_values_to_use, sample, plot_type="bar", show=False)
-    st.pyplot(fig)
+    # Gender-based
+    if sex.lower() == "male":
+        advice.append("🔹 Reduce smoking/alcohol, and monitor cholesterol closely.")
+    else:
+        advice.append("🔹 Manage stress, maintain balanced diet, and regular walks are beneficial.")
 
-    # Force plot (Local explanation)
-    st.subheader("📊 Detailed Local Explanation (Force Plot)")
-    fig = shap.force_plot(
-        explainer.expected_value[1] if isinstance(explainer.expected_value, (list, tuple)) else explainer.expected_value,
-        shap_values_to_use,
-        sample,
-        matplotlib=True,
-        show=False
-    )
-    st.pyplot(plt.gcf())
-
+    return " ".join(advice)
 
 # ----------------------------
-# Footer
+# Streamlit App Layout
 # ----------------------------
-st.markdown("---")
-st.caption("Developed as part of a Software Engineering project using ML + Explainable AI (SHAP).")
+st.set_page_config(page_title="Heart Disease Chatbot", layout="centered")
+st.title("❤️ Heart Disease Predictor - Chatbot Mode")
+
+st.markdown("Answer step by step. You can type or use voice 🎤.")
+
+# Current question
+if st.session_state.step < len(questions):
+    feature, q_text = questions[st.session_state.step]
+    st.subheader(q_text)
+
+    # Text input
+    user_input = st.text_input("Type your answer here:", key=f"q_{feature}")
+
+    # Voice input
+    if st.button("🎤 Use Voice Input"):
+        voice_text = get_voice_input()
+        if voice_text:
+            st.session_state.inputs[feature] = voice_text
+            st.session_state.step += 1
+            st.experimental_rerun()
+
+    # Next button for typed input
+    if st.button("➡️ Next"):
+        if user_input.strip() != "":
+            st.session_state.inputs[feature] = user_input
+            st.session_state.step += 1
+            st.experimental_rerun()
+        else:
+            st.warning("Please provide an answer before continuing.")
+
+# ----------------------------
+# Once All Inputs Collected → Prediction
+# ----------------------------
+else:
+    st.success("✅ All inputs collected! Running prediction...")
+
+    try:
+        # Convert inputs
+        inputs = st.session_state.inputs
+        sex_val = 1 if str(inputs["sex"]).lower().startswith("m") else 0
+
+        sample = pd.DataFrame([{
+            "age": int(inputs["age"]),
+            "sex": sex_val,
+            "cp": int(inputs["cp"]),
+            "trestbps": int(inputs["trestbps"]),
+            "chol": int(inputs["chol"]),
+            "fbs": int(inputs["fbs"]),
+            "restecg": int(inputs["restecg"]),
+            "thalach": int(inputs["thalach"]),
+            "exang": int(inputs["exang"]),
+            "oldpeak": float(inputs["oldpeak"]),
+            "slope": int(inputs["slope"]),
+            "ca": int(inputs["ca"]),
+            "thal": int(inputs["thal"])
+        }])
+
+        prediction = model.predict(sample)[0]
+        probability = model.predict_proba(sample)[0][1]
+
+        if prediction == 1:
+            st.error(f"⚠️ The model predicts **Heart Disease Risk** with probability {probability:.2%}")
+        else:
+            st.success(f"✅ The model predicts **No Heart Disease** with probability {1-probability:.2%}")
+
+        # Advice
+        st.markdown("### 📌 Personalized Advice")
+        st.info(give_advice(probability, int(inputs["age"]), inputs["sex"]))
+
+    except Exception as e:
+        st.error(f"Error in prediction: {e}")
