@@ -196,9 +196,8 @@
 #         # Make prediction
 #         try:
 #             pred = model.predict(sample)[0]
-#             prob = model.predict_proba(sample)[0] if hasattr(model, 'predict_proba') else None
             
-#             # Display results
+#             # Display results based on raw prediction value
 #             if pred == 1:
 #                 st.markdown("""
 #                 <div class="prediction-positive">
@@ -218,15 +217,6 @@
 #                 """, unsafe_allow_html=True)
                 
 #                 st.success("✅ **Good News:** Low risk detected. Continue regular check-ups and maintain a healthy lifestyle.")
-            
-#             # Show probability if available
-#             if prob is not None:
-#                 st.markdown("### 📊 Confidence Levels")
-#                 prob_col1, prob_col2 = st.columns(2)
-#                 with prob_col1:
-#                     st.metric("No Disease Probability", f"{prob[0]:.1%}")
-#                 with prob_col2:
-#                     st.metric("Disease Probability", f"{prob[1]:.1%}")
                 
 #         except Exception as e:
 #             st.error(f"❌ Prediction Error: {str(e)}")
@@ -343,6 +333,28 @@ with st.sidebar:
     - 0: Upsloping
     - 1: Flat
     - 2: Downsloping
+    """)
+    
+    st.markdown("### 🫀 Thalassemia Guide")
+    st.markdown("""
+    **What is Thalassemia?**
+    Thalassemia is a blood disorder that affects the heart's ability to pump blood effectively.
+    
+    **Types in Heart Disease Context:**
+    - **0: Unknown** - No thalassemia test performed
+    - **1: Fixed Defect** - Permanent blood flow reduction to heart muscle
+    - **2: Normal** - Normal blood flow pattern
+    - **3: Reversible Defect** - Temporary blood flow reduction during stress
+    
+    **Impact on Heart Health:**
+    - Fixed defects indicate permanent heart muscle damage
+    - Reversible defects suggest coronary artery disease
+    - Normal results indicate healthy blood flow
+    
+    **Key Points:**
+    - Higher values (2-3) generally indicate better outcomes
+    - Fixed defects (1) are associated with higher heart disease risk
+    - This test is often done with nuclear imaging
     """)
 
 # Main content in columns
