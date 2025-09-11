@@ -444,7 +444,7 @@ with predict_col2:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                st.error("⚠️ **Important:** This is a screening tool only. Please seek immediate medical attention for proper diagnosis and treatment.")
+                st.error("⚠️ **Important:** Please seek immediate medical attention for proper diagnosis and treatment.")
                 
             else:
                 st.markdown("""
