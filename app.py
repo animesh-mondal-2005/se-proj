@@ -95,10 +95,7 @@ with st.sidebar:
     - 0: Upsloping
     - 1: Flat
     - 2: Downsloping
-    """)
-    
-    st.markdown("### 🫀 Thalassemia Guide")
-    st.markdown("""
+
     **Thalassemia:**
     - 0: Unknown/Normal
     - 1: Fixed Defect
