@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import speech_recognition as sr
 
 # ----------------------------
 # Load Model
@@ -38,22 +37,6 @@ questions = [
 ]
 
 # ----------------------------
-# Voice Input Function
-# ----------------------------
-def get_voice_input():
-    r = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.info("🎤 Listening... please speak now.")
-        audio = r.listen(source)
-    try:
-        text = r.recognize_google(audio)
-        st.success(f"You said: {text}")
-        return text
-    except:
-        st.error("❌ Sorry, I could not understand your voice.")
-        return None
-
-# ----------------------------
 # Personalized Advice
 # ----------------------------
 def give_advice(risk, age, sex):
@@ -72,7 +55,7 @@ def give_advice(risk, age, sex):
         advice.append("🔹 Maintain physical activity and avoid junk food.")
 
     # Gender-based
-    if sex.lower() == "male":
+    if sex.lower().startswith("m"):
         advice.append("🔹 Reduce smoking/alcohol, and monitor cholesterol closely.")
     else:
         advice.append("🔹 Manage stress, maintain balanced diet, and regular walks are beneficial.")
@@ -85,25 +68,15 @@ def give_advice(risk, age, sex):
 st.set_page_config(page_title="Heart Disease Chatbot", layout="centered")
 st.title("❤️ Heart Disease Predictor - Chatbot Mode")
 
-st.markdown("Answer step by step. You can type or use voice 🎤.")
+st.markdown("Answer the following step by step. After the last question, the prediction will be shown.")
 
 # Current question
 if st.session_state.step < len(questions):
     feature, q_text = questions[st.session_state.step]
     st.subheader(q_text)
 
-    # Text input
-    user_input = st.text_input("Type your answer here:", key=f"q_{feature}")
+    user_input = st.text_input("Your answer:", key=f"q_{feature}")
 
-    # Voice input
-    if st.button("🎤 Use Voice Input"):
-        voice_text = get_voice_input()
-        if voice_text:
-            st.session_state.inputs[feature] = voice_text
-            st.session_state.step += 1
-            st.experimental_rerun()
-
-    # Next button for typed input
     if st.button("➡️ Next"):
         if user_input.strip() != "":
             st.session_state.inputs[feature] = user_input
