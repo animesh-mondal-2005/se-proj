@@ -86,7 +86,6 @@ if st.button("🔍 Predict with Explanation"):
     shap_values = explainer.shap_values(sample)
 
     # Plot SHAP bar chart
-    st.set_option('deprecation.showPyplotGlobalUse', False)
     shap.initjs()
     plt.title("Feature Impact on Prediction")
     shap.summary_plot(shap_values, sample, plot_type="bar", show=False)
@@ -95,7 +94,7 @@ if st.button("🔍 Predict with Explanation"):
     # Optional: Local force plot
     st.subheader("📊 Detailed Local Explanation (Force Plot)")
     shap.force_plot(explainer.expected_value[1], shap_values[1], sample, matplotlib=True, show=False)
-    st.pyplot(bbox_inches='tight')
+    st.pyplot(plt.gcf(), clear_figure=True)
 
 # ----------------------------
 # Footer
