@@ -337,26 +337,11 @@ with st.sidebar:
     
     st.markdown("### 🫀 Thalassemia Guide")
     st.markdown("""
-    **What is Thalassemia?**
-    Thalassemia is a blood disorder that affects the heart's ability to pump blood effectively.
-    
-    **Value Descriptions:**
-    - **0: Unknown/Normal** - No thalassemia detected or test not performed
-    - **1: Fixed Defect** - Permanent blood flow reduction to heart muscle (scar tissue)
-    - **2: Normal Flow** - Normal blood flow pattern during stress test
-    - **3: Reversible Defect** - Temporary blood flow reduction during stress (blockage)
-    
-    **Clinical Significance:**
-    - **Value 0:** Baseline/normal condition
-    - **Value 1:** Indicates previous heart attack or permanent damage
-    - **Value 2:** Healthy heart with good blood circulation
-    - **Value 3:** Suggests coronary artery disease requiring attention
-    
-    **Risk Assessment:**
-    - Values 1 & 3: Higher heart disease risk
-    - Values 0 & 2: Lower heart disease risk
-    - Fixed defects (1) indicate established heart damage
-    - Reversible defects (3) suggest treatable blockages
+    **Thalassemia:**
+    - 0: Unknown/Normal
+    - 1: Fixed Defect
+    - 2: Normal Flow
+    - 3: Reversible Defect
     """)
 
 # Main content in columns
