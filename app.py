@@ -1,6 +1,10 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import speech_recognition as sr
+from fpdf import FPDF
+import shap
+import matplotlib.pyplot as plt
 
 @st.cache_resource
 def load_model():
@@ -8,48 +12,142 @@ def load_model():
 
 model = load_model()
 
-st.set_page_config(page_title="Heart Disease Predictor", layout="centered")
-st.title("❤️ Heart Disease Predictor")
 st.markdown("""
-This application predicts whether a patient is **likely to have heart disease** based on medical attributes.  
-Please enter the details below:
-""")
+    <style>
+    .main-title {
+        font-size:32px;
+        color:#d32f2f;
+        text-align:center;
+        font-weight:bold;
+    }
+    .chat-bubble {
+        background:#fff3f3;
+        padding:10px;
+        border-radius:10px;
+        margin:5px 0;
+        border:1px solid #ffcccc;
+    }
+    .user-bubble {
+        background:#e3f2fd;
+        padding:10px;
+        border-radius:10px;
+        margin:5px 0;
+        border:1px solid #90caf9;
+        text-align:right;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-col1, col2 = st.columns(2)
+st.markdown('<div class="main-title">❤️ Heart Health Chatbot with Explainable AI</div>', unsafe_allow_html=True)
 
-with col1:
-    age = st.number_input("Age", 18, 100, 50)
-    sex = st.selectbox("Sex", ["Male", "Female"])
-    cp = st.selectbox("Chest Pain Type (0=Typical, 1=Atypical, 2=Non-anginal, 3=Asymptomatic)", [0, 1, 2, 3])
-    trestbps = st.number_input("Resting BP (mm Hg)", 80, 200, 120)
-    chol = st.number_input("Cholesterol (mg/dl)", 100, 600, 200)
-    fbs = st.selectbox("Fasting Blood Sugar > 120 mg/dl", [0, 1])
+def listen_voice():
+    recognizer = sr.Recognizer()
+    mic = sr.Microphone()
+    with mic as source:
+        st.write("🎤 Listening... please speak now")
+        audio = recognizer.listen(source, phrase_time_limit=5)
+    try:
+        text = recognizer.recognize_google(audio)
+        st.write(f"✅ You said: {text}")
+        return text
+    except sr.UnknownValueError:
+        st.error("❌ Could not understand audio, please type instead.")
+        return None
+    except sr.RequestError:
+        st.error("⚠️ Speech recognition service unavailable.")
+        return None
 
-with col2:
-    restecg = st.selectbox("Resting ECG (0=Normal, 1=ST-T abnormality, 2=LVH)", [0, 1, 2])
-    thalach = st.number_input("Max Heart Rate Achieved", 60, 220, 150)
-    exang = st.selectbox("Exercise Induced Angina (0=No, 1=Yes)", [0, 1])
-    oldpeak = st.number_input("ST Depression (oldpeak)", 0.0, 10.0, 1.0, step=0.1)
-    slope = st.selectbox("Slope (0=Upsloping, 1=Flat, 2=Downsloping)", [0, 1, 2])
-    ca = st.selectbox("Number of Major Vessels (0-3)", [0, 1, 2, 3])
-    thal = st.selectbox("Thal (1=Fixed, 2=Normal, 3=Reversible)", [1, 2, 3])
+questions = [
+    ("age", "What is your age?"),
+    ("sex", "What is your sex? (Male/Female)"),
+    ("cp", "Chest pain type? (0=Typical,1=Atypical,2=Non-anginal,3=Asymptomatic)"),
+    ("trestbps", "Resting blood pressure (mm Hg)?"),
+    ("chol", "Cholesterol level (mg/dl)?"),
+    ("fbs", "Is fasting blood sugar > 120 mg/dl? (0=No, 1=Yes)"),
+    ("restecg", "Resting ECG? (0=Normal,1=ST-T abnormality,2=LVH)"),
+    ("thalach", "Max heart rate achieved?"),
+    ("exang", "Exercise induced angina? (0=No, 1=Yes)"),
+    ("oldpeak", "ST depression (oldpeak)?"),
+    ("slope", "Slope of ST segment? (0=Upsloping,1=Flat,2=Downsloping)"),
+    ("ca", "Number of major vessels (0-3)?"),
+    ("thal", "Thalassemia? (1=Fixed, 2=Normal, 3=Reversible)")
+]
 
-if st.button("🔍 Predict"):
-    sex_val = 1 if sex == "Male" else 0
+responses = {}
 
-    sample = pd.DataFrame([{
-        "age": age, "sex": sex_val, "cp": cp, "trestbps": trestbps, "chol": chol,
-        "fbs": fbs, "restecg": restecg, "thalach": thalach, "exang": exang,
-        "oldpeak": oldpeak, "slope": slope, "ca": ca, "thal": thal
-    }])
+for key, question in questions:
+    st.markdown(f'<div class="chat-bubble">{question}</div>', unsafe_allow_html=True)
+    col1, col2 = st.columns([3,1])
+    with col1:
+        ans = st.text_input(f"Answer for {key}", key=key)
+    with col2:
+        if st.button("🎤 Speak", key=f"btn_{key}"):
+            voice_text = listen_voice()
+            if voice_text:
+                st.session_state[key] = voice_text
+                ans = voice_text
+    if ans:
+        responses[key] = ans
+        st.markdown(f'<div class="user-bubble">{ans}</div>', unsafe_allow_html=True)
 
-    prediction = model.predict(sample)[0]
-    probability = model.predict_proba(sample)[0][1]
+if len(responses) == len(questions) and st.button("🔍 Predict"):
+    try:
+        # Preprocess inputs
+        sex_val = 1 if str(responses["sex"]).lower() == "male" else 0
+        data = pd.DataFrame([{
+            "age": int(responses["age"]),
+            "sex": sex_val,
+            "cp": int(responses["cp"]),
+            "trestbps": int(responses["trestbps"]),
+            "chol": int(responses["chol"]),
+            "fbs": int(responses["fbs"]),
+            "restecg": int(responses["restecg"]),
+            "thalach": int(responses["thalach"]),
+            "exang": int(responses["exang"]),
+            "oldpeak": float(responses["oldpeak"]),
+            "slope": int(responses["slope"]),
+            "ca": int(responses["ca"]),
+            "thal": int(responses["thal"])
+        }])
 
-    if prediction == 1:
-        st.error(f"⚠️ **Heart Disease Risk** ")
-    else:
-        st.success(f"✅ **No Heart Disease** ")
+        prediction = model.predict(data)[0]
+        probability = model.predict_proba(data)[0][1]
 
-st.markdown("---")
-st.caption("Developed as part of a Software Engineering project using Machine Learning.")
+        if prediction == 1:
+            result_text = f"⚠️ High Risk of Heart Disease ({probability:.2%})"
+            st.error(result_text)
+        else:
+            result_text = f"✅ Low Risk of Heart Disease ({1-probability:.2%})"
+            st.success(result_text)
+
+        explainer = shap.TreeExplainer(model)
+        shap_values = explainer.shap_values(data)
+
+        st.subheader("🔎 Why this prediction?")
+        fig, ax = plt.subplots()
+        shap.bar_plot(shap_values[1][0], feature_names=data.columns, max_display=5, show=False)
+        st.pyplot(fig)
+
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", "B", 16)
+        pdf.cell(200, 10, "Heart Disease Prediction Report", ln=True, align="C")
+
+        pdf.set_font("Arial", "", 12)
+        pdf.cell(200, 10, "Patient Inputs:", ln=True)
+        for k, v in responses.items():
+            pdf.cell(200, 8, f"{k}: {v}", ln=True)
+
+        pdf.cell(200, 10, f"Prediction Result: {result_text}", ln=True)
+        pdf.cell(200, 10, "Key Factors Influencing Prediction:", ln=True)
+
+        feature_importance = pd.Series(shap_values[1][0], index=data.columns).sort_values(ascending=False)
+        for feat, val in feature_importance.head(5).items():
+            pdf.cell(200, 8, f"{feat}: {val:.4f}", ln=True)
+
+        pdf.output("Heart_Report.pdf")
+        with open("Heart_Report.pdf", "rb") as file:
+            st.download_button("📄 Download Report", file, file_name="Heart_Report.pdf")
+
+    except Exception as e:
+        st.error(f"Error during prediction: {e}")
