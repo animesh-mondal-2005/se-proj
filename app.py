@@ -70,9 +70,9 @@ model = load_model()
 st.markdown('<h1 class="main-header">❤️ Heart Disease Predictor</h1>', unsafe_allow_html=True)
 
 st.markdown("""
-<div class="info-box">
-    <h3>🩺 About This Tool</h3>
-    <p>This AI-powered tool helps assess the risk of heart disease based on various medical parameters. 
+<div class="info-box" >
+    <h3 style="color:red;" >🩺 About This Tool</h3>
+    <p style="color:red;">This AI-powered tool helps assess the risk of heart disease based on various medical parameters. 
     Please consult with a healthcare professional for proper medical diagnosis and treatment.</p>
 </div>
 """, unsafe_allow_html=True)
