@@ -3,7 +3,6 @@ pandas
 scikit-learn
 joblib
 speechrecognition
-pyaudio
 fpdf
 shap
 matplotlib
