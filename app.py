@@ -85,16 +85,28 @@ if st.button("🔍 Predict with Explanation"):
     st.subheader("🧠 Why this Prediction? (Explainable AI)")
     shap_values = explainer.shap_values(sample)
 
-    # Plot SHAP bar chart
-    shap.initjs()
-    plt.title("Feature Impact on Prediction")
-    shap.summary_plot(shap_values, sample, plot_type="bar", show=False)
-    st.pyplot(bbox_inches='tight')
+    # Handle binary/multi-class safely
+    if isinstance(shap_values, list):
+        shap_values_to_use = shap_values[1]  # Use positive class
+    else:
+        shap_values_to_use = shap_values
 
-    # Optional: Local force plot
+    # Bar chart (Feature importance for this prediction)
+    fig, ax = plt.subplots()
+    shap.summary_plot(shap_values_to_use, sample, plot_type="bar", show=False)
+    st.pyplot(fig)
+
+    # Force plot (Local explanation)
     st.subheader("📊 Detailed Local Explanation (Force Plot)")
-    shap.force_plot(explainer.expected_value[1], shap_values[1], sample, matplotlib=True, show=False)
-    st.pyplot(plt.gcf(), clear_figure=True)
+    fig = shap.force_plot(
+        explainer.expected_value[1] if isinstance(explainer.expected_value, (list, tuple)) else explainer.expected_value,
+        shap_values_to_use,
+        sample,
+        matplotlib=True,
+        show=False
+    )
+    st.pyplot(plt.gcf())
+
 
 # ----------------------------
 # Footer
