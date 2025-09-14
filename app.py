@@ -110,7 +110,20 @@ with col1:
 
     demo_col1, demo_col2 = st.columns(2)
     with demo_col1:
-        age = st.number_input("👤 Age", min_value=18, max_value=100, value=50, help="Patient's age in years")
+        # age = st.number_input("👤 Age", min_value=18, max_value=100, value=50, help="Patient's age in years")
+        try:
+            age = st.number_input(
+                "👤 Age", 
+                min_value=18, 
+                max_value=100, 
+                value=50, 
+                help="Patient's age in years"
+            )
+
+            if not isinstance(age, (int, float)):
+                st.error("❌ Invalid input: Age must be a number between 18 and 100.")
+        except ValueError:
+            st.error("❌ Invalid input: Please enter a valid number for age.")
         sex = st.selectbox("⚧ Sex", options=[1, 0], format_func=lambda x: "Male" if x == 1 else "Female")
     
     with demo_col2:
