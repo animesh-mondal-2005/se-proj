@@ -111,7 +111,17 @@ with col1:
 
     demo_col1, demo_col2 = st.columns(2)
     with demo_col1:
-        age = st.number_input("👤 Age", min_value=18, max_value=100, value=50, help="Patient's age in years")
+        # age = st.number_input("👤 Age", min_value=18, max_value=100, value=50, help="Patient's age in years")
+        age_input = st.text_input("👤 Enter Age", "50", help="Enter your age between 18 and 100")
+        if age_input:
+            if not re.fullmatch(r"\d+", age_input):
+                st.warning("⚠️ Value must be a valid number (no letters or symbols).")
+        else:
+            age = int(age_input)
+            if age < 18:
+                st.warning("⚠️ Value must be greater than or equal to 18.")
+            elif age > 100:
+                st.warning("⚠️ Value must be less than or equal to 100.")
         sex = st.selectbox("⚧ Sex", options=[1, 0], format_func=lambda x: "Male" if x == 1 else "Female")
     with demo_col2:
         cp = st.selectbox("💔 Chest Pain Type", options=[0, 1, 2, 3], 
