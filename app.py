@@ -97,7 +97,7 @@ with st.sidebar:
     - 2: Downsloping
 
     **Thalassemia:**
-    - 0: Unknown/Normal
+    - 0: Unknown
     - 1: Fixed Defect
     - 2: Normal Flow
     - 3: Reversible Defect
