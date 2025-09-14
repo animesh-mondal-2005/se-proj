@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import re
 import joblib
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -111,21 +112,17 @@ with col1:
     demo_col1, demo_col2 = st.columns(2)
     with demo_col1:
         # age = st.number_input("👤 Age", min_value=18, max_value=100, value=50, help="Patient's age in years")
-        try:
-            age = st.number_input(
-                "👤 Age", 
-                min_value=18, 
-                max_value=100, 
-                value=50, 
-                help="Patient's age in years"
-            )
-
-            if not isinstance(age, (int, float)):
-                st.error("❌ Invalid input: Age must be a number between 18 and 100.")
-        except ValueError:
-            st.error("❌ Invalid input: Please enter a valid number for age.")
         sex = st.selectbox("⚧ Sex", options=[1, 0], format_func=lambda x: "Male" if x == 1 else "Female")
-    
+        age_input = st.text_input("👤 Age", "50", help="Patient's age in years (18-100)")
+
+        if not re.fullmatch(r"\d+", age_input):
+            st.error("❌ Invalid input: Age must contain only numbers.")
+        else:
+            age = int(age_input)
+        if age < 18 or age > 100:
+            st.error("❌ Age must be between 18 and 100.")
+        else:
+            st.success(f"✅ Age accepted: {age}")
     with demo_col2:
         cp = st.selectbox("💔 Chest Pain Type", options=[0, 1, 2, 3], 
                          format_func=lambda x: ["Typical Angina", "Atypical Angina", "Non-Anginal Pain", "Asymptomatic"][x])
