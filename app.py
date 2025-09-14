@@ -60,7 +60,7 @@ st.markdown("""
 @st.cache_resource
 def load_model():
     try:
-        return joblib.load("heart_predictor.joblib")
+        return joblib.load("heart_predictor_rf.joblib")
     except FileNotFoundError:
         st.error("⚠️ Model file 'heart_predictor.joblib' not found. Please ensure the model file is in the same directory.")
         st.stop()
