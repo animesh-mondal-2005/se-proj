@@ -112,12 +112,12 @@ with col1:
     demo_col1, demo_col2 = st.columns(2)
     with demo_col1:
         # age = st.number_input("👤 Age", min_value=18, max_value=100, value=50, help="Patient's age in years")
-        age_input = st.text_input("👤 Enter Age", "50", help="Enter your age between 18 and 100")
-        if age_input:
-            if not re.fullmatch(r"\d+", age_input):
+        age = st.text_input("👤 Enter Age", help="Enter your age between 18 and 100")
+        if age:
+            if not re.fullmatch(r"\d+", age):
                 st.warning("⚠️ Value must be a valid number (no letters or symbols).")
         else:
-            age = int(age_input)
+            age = int(age)
             if age < 18:
                 st.warning("⚠️ Value must be greater than or equal to 18.")
             elif age > 100:
@@ -174,9 +174,9 @@ predict_col1, predict_col2, predict_col3 = st.columns([1, 2, 1])
 
 with predict_col2:
     if st.button("🔍 Analyze Heart Disease Risk", type="primary", use_container_width=True):
-        # Create sample dataframe
+
         sample = pd.DataFrame([{
-            "age": age, "sex": sex, "cp": cp, "trestbps": trestbps, "chol": chol,
+            "age": age_input, "sex": sex, "cp": cp, "trestbps": trestbps, "chol": chol,
             "fbs": fbs, "restecg": restecg, "thalach": thalach, "exang": exang,
             "oldpeak": oldpeak, "slope": slope, "ca": ca, "thal": thal
         }])
