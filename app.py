@@ -119,10 +119,10 @@ with col1:
                 st.warning("⚠️ Value must be a valid number (no letters or symbols).")
                 age = None
         else:
-            if age < 18:
+            if age_input < 18:
                 st.warning("⚠️ Value must be greater than or equal to 18.")
                 age = None
-            elif age > 100:
+            elif age_input > 100:
                 st.warning("⚠️ Value must be less than or equal to 100.")
                 age = None
         sex = st.selectbox("⚧ Sex", options=[1, 0], format_func=lambda x: "Male" if x == 1 else "Female")
