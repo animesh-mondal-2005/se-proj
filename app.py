@@ -112,19 +112,15 @@ with col1:
     demo_col1, demo_col2 = st.columns(2)
     with demo_col1:
         # age = st.number_input("👤 Age", min_value=18, max_value=100, help="Patient's age in years")
-        age_input = st.text_input("👤 Enter Age","", help="Enter your age between 18 and 100")
-        age = None
-        if age_input:
-            if not re.fullmatch(r"\d+", age_input):
+        age = st.text_input("👤 Enter Age","", help="Enter your age between 18 and 100")
+        if age:
+            if not re.fullmatch(r"\d+", age):
                 st.warning("⚠️ Value must be a valid number (no letters or symbols).")
-                age = None
         else:
-            if age_input < 18:
+            if age < 18:
                 st.warning("⚠️ Value must be greater than or equal to 18.")
-                age = None
-            elif age_input > 100:
+            elif age > 100:
                 st.warning("⚠️ Value must be less than or equal to 100.")
-                age = None
         sex = st.selectbox("⚧ Sex", options=[1, 0], format_func=lambda x: "Male" if x == 1 else "Female")
     with demo_col2:
         cp = st.selectbox("💔 Chest Pain Type", options=[0, 1, 2, 3], 
@@ -179,7 +175,7 @@ with predict_col2:
     if st.button("🔍 Analyze Heart Disease Risk", type="primary", use_container_width=True):
 
         sample = pd.DataFrame([{
-            "age": age_input, "sex": sex, "cp": cp, "trestbps": trestbps, "chol": chol,
+            "age": age, "sex": sex, "cp": cp, "trestbps": trestbps, "chol": chol,
             "fbs": fbs, "restecg": restecg, "thalach": thalach, "exang": exang,
             "oldpeak": oldpeak, "slope": slope, "ca": ca, "thal": thal
         }])
