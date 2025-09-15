@@ -119,7 +119,6 @@ with col1:
                 st.warning("⚠️ Value must be a valid number (no letters or symbols).")
                 age = None
         else:
-            age = int(age_input)
             if age < 18:
                 st.warning("⚠️ Value must be greater than or equal to 18.")
                 age = None
