@@ -275,6 +275,21 @@ st.markdown("""
         color: #7f8c8d;
         font-size: 0.9rem;
     }
+    .explanation-box {
+        background-color: #f0f8ff;
+        padding: 1.5rem;
+        border-radius: 10px;
+        border-left: 5px solid #3498db;
+        margin: 1rem 0;
+    }
+    .factor-positive {
+        color: #e74c3c;
+        font-weight: bold;
+    }
+    .factor-negative {
+        color: #27ae60;
+        font-weight: bold;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -287,6 +302,131 @@ def load_model():
         st.stop()
 
 model = load_model()
+
+# Feature descriptions for better explanations
+FEATURE_DESCRIPTIONS = {
+    "age": "Age",
+    "sex": "Sex (Male/Female)",
+    "cp": "Chest Pain Type",
+    "trestbps": "Resting Blood Pressure",
+    "chol": "Cholesterol Level",
+    "fbs": "Fasting Blood Sugar > 120 mg/dl",
+    "restecg": "Resting ECG Results",
+    "thalach": "Maximum Heart Rate",
+    "exang": "Exercise Induced Angina",
+    "oldpeak": "ST Depression",
+    "slope": "ST Slope",
+    "ca": "Number of Major Vessels",
+    "thal": "Thalassemia"
+}
+
+FEATURE_VALUE_DESCRIPTIONS = {
+    "cp": ["Typical Angina", "Atypical Angina", "Non-Anginal Pain", "Asymptomatic"],
+    "restecg": ["Normal", "ST-T Wave Abnormality", "Left Ventricular Hypertrophy"],
+    "slope": ["Upsloping", "Flat", "Downsloping"],
+    "thal": ["Unknown/Normal", "Fixed Defect", "Normal Flow", "Reversible Defect"],
+    "sex": ["Female", "Male"],
+    "fbs": ["No", "Yes"],
+    "exang": ["No", "Yes"]
+}
+
+def get_feature_value_description(feature, value):
+    """Get human-readable description of feature values"""
+    if feature in FEATURE_VALUE_DESCRIPTIONS:
+        options = FEATURE_VALUE_DESCRIPTIONS[feature]
+        if isinstance(value, (int, float)) and 0 <= value < len(options):
+            return options[int(value)]
+    return str(value)
+
+def generate_explanation(prediction, probability, shap_values, feature_values, feature_names):
+    """Generate human-readable explanation based on SHAP values"""
+    
+    # Create DataFrame with feature contributions
+    contrib_df = pd.DataFrame({
+        'feature': feature_names,
+        'value': feature_values,
+        'shap': shap_values
+    })
+    
+    # Sort by absolute SHAP value (most influential first)
+    contrib_df['abs_shap'] = np.abs(contrib_df['shap'])
+    contrib_df = contrib_df.sort_values('abs_shap', ascending=False)
+    
+    # Separate increasing and decreasing factors
+    increasing_factors = contrib_df[contrib_df['shap'] > 0]
+    decreasing_factors = contrib_df[contrib_df['shap'] < 0]
+    
+    explanation_parts = []
+    
+    if prediction == 1:  # High risk prediction
+        explanation_parts.append(f"## 🔍 Why Heart Disease Was Predicted (Risk: {probability:.1%})")
+        explanation_parts.append("The model predicted **high risk of heart disease** primarily due to:")
+        
+        if not increasing_factors.empty:
+            explanation_parts.append("### 📈 Factors Increasing Risk:")
+            for _, factor in increasing_factors.head(3).iterrows():
+                feature_desc = FEATURE_DESCRIPTIONS.get(factor['feature'], factor['feature'])
+                value_desc = get_feature_value_description(factor['feature'], factor['value'])
+                explanation_parts.append(
+                    f"- **{feature_desc}** = {value_desc} "
+                    f"(<span class='factor-positive'>increased risk by {factor['shap']:.3f}</span>)"
+                )
+        else:
+            explanation_parts.append("No strong risk-increasing factors were identified.")
+            
+        if not decreasing_factors.empty:
+            explanation_parts.append("### 📉 Factors That Reduced Risk (but weren't enough):")
+            for _, factor in decreasing_factors.head(2).iterrows():
+                feature_desc = FEATURE_DESCRIPTIONS.get(factor['feature'], factor['feature'])
+                value_desc = get_feature_value_description(factor['feature'], factor['value'])
+                explanation_parts.append(
+                    f"- **{feature_desc}** = {value_desc} "
+                    f"(<span class='factor-negative'>decreased risk by {abs(factor['shap']):.3f}</span>)"
+                )
+    
+    else:  # Low risk prediction
+        explanation_parts.append(f"## 🔍 Why No Heart Disease Was Predicted (Risk: {probability:.1%})")
+        explanation_parts.append("The model predicted **low risk of heart disease** primarily due to:")
+        
+        if not decreasing_factors.empty:
+            explanation_parts.append("### 📉 Factors Decreasing Risk:")
+            for _, factor in decreasing_factors.head(3).iterrows():
+                feature_desc = FEATURE_DESCRIPTIONS.get(factor['feature'], factor['feature'])
+                value_desc = get_feature_value_description(factor['feature'], factor['value'])
+                explanation_parts.append(
+                    f"- **{feature_desc}** = {value_desc} "
+                    f"(<span class='factor-negative'>decreased risk by {abs(factor['shap']):.3f}</span>)"
+                )
+        else:
+            explanation_parts.append("No strong risk-decreasing factors were identified.")
+            
+        if not increasing_factors.empty:
+            explanation_parts.append("### 📈 Factors That Increased Risk (but were outweighed):")
+            for _, factor in increasing_factors.head(2).iterrows():
+                feature_desc = FEATURE_DESCRIPTIONS.get(factor['feature'], factor['feature'])
+                value_desc = get_feature_value_description(factor['feature'], factor['value'])
+                explanation_parts.append(
+                    f"- **{feature_desc}** = {value_desc} "
+                    f"(<span class='factor-positive'>increased risk by {factor['shap']:.3f}</span>)"
+                )
+    
+    # Add key influential factors summary
+    if not contrib_df.empty:
+        top_factor = contrib_df.iloc[0]
+        feature_desc = FEATURE_DESCRIPTIONS.get(top_factor['feature'], top_factor['feature'])
+        value_desc = get_feature_value_description(top_factor['feature'], top_factor['value'])
+        
+        explanation_parts.append("### 💡 Key Insight:")
+        if top_factor['shap'] > 0:
+            explanation_parts.append(
+                f"The most influential factor was **{feature_desc}** ({value_desc}), which significantly increased the risk prediction."
+            )
+        else:
+            explanation_parts.append(
+                f"The most influential factor was **{feature_desc}** ({value_desc}), which significantly decreased the risk prediction."
+            )
+    
+    return "\n\n".join(explanation_parts)
 
 st.markdown('<h1 class="main-header">❤️ Heart Disease Predictor</h1>', unsafe_allow_html=True)
 
@@ -457,7 +597,7 @@ with predict_col2:
             # =========================
             # SHAP EXPLANATION SECTION
             # =========================
-            st.markdown('<h3 class="section-header">🔎 Why this prediction? (SHAP)</h3>', unsafe_allow_html=True)
+            st.markdown('<h3 class="section-header">🔎 Why this prediction? (SHAP Explanation)</h3>', unsafe_allow_html=True)
 
             if not SHAP_AVAILABLE:
                 st.info("Install SHAP to view explanations: pip install shap")
@@ -482,7 +622,6 @@ with predict_col2:
                         base_value = explainer.expected_value[1] if isinstance(explainer.expected_value, (list, np.ndarray)) else explainer.expected_value
                     else:
                         # Explanation object
-                        # Some SHAP versions return Explanation with .values
                         shap_vals = sv.values[0] if hasattr(sv, "values") else np.array(sv)[0]
                         base_value = sv.base_values[0] if hasattr(sv, "base_values") else None
                 except Exception as e:
@@ -492,6 +631,21 @@ with predict_col2:
                     shap_vals = sv.values[0] if hasattr(sv, "values") else np.array(sv)[0]
                     base_value = sv.base_values[0] if hasattr(sv, "base_values") else None
 
+                # Generate human-readable explanation
+                explanation = generate_explanation(
+                    prediction=pred,
+                    probability=prob if prob is not None else 0.0,
+                    shap_values=shap_vals,
+                    feature_values=sample.iloc[0].values,
+                    feature_names=sample.columns
+                )
+                
+                # Display the explanation
+                st.markdown('<div class="explanation-box">', unsafe_allow_html=True)
+                st.markdown(explanation, unsafe_allow_html=True)
+                st.markdown('</div>', unsafe_allow_html=True)
+
+                # Visual SHAP plot
                 contrib = pd.DataFrame({
                     "feature": sample.columns,
                     "value": sample.iloc[0].values,
@@ -499,18 +653,6 @@ with predict_col2:
                 })
                 contrib["direction"] = np.where(contrib["shap"] >= 0, "↑ increases risk", "↓ decreases risk")
                 contrib_abs_sorted = contrib.reindex(contrib["shap"].abs().sort_values(ascending=False).index)
-
-                # Narrative: strongest risk-increasing factor
-                top_increasing = contrib[contrib["shap"] > 0].sort_values("shap", ascending=False).head(1)
-                if not top_increasing.empty:
-                    f_name = top_increasing["feature"].iloc[0]
-                    f_val = top_increasing["value"].iloc[0]
-                    f_shap = top_increasing["shap"].iloc[0]
-                    st.markdown(
-                        f"**Most influential risk-increasing factor:** {f_name} = {f_val} (SHAP +{f_shap:.3f})"
-                    )
-                else:
-                    st.markdown("**Most influential risk-increasing factor:** None (no positive contributors)")
 
                 # Two-sided bar visualization
                 pos = contrib[contrib["shap"] > 0].sort_values("shap", ascending=True).tail(5)
