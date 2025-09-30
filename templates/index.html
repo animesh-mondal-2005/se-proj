@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>❤️ Heart Disease Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #e0e0e0;
+        }
+
+        .header {
+            background: #0f0f1e;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #2a2a3e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            min-height: calc(100vh - 70px);
+        }
+
+        .sidebar {
+            background: #1a1a2e;
+            padding: 1.5rem;
+            border-right: 1px solid #2a2a3e;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-title {
+            color: #888;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sidebar-item {
+            color: #b0b0b0;
+            font-size: 0.85rem;
+            padding: 0.4rem 0;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .sidebar-item:hover {
+            color: #ffffff;
+        }
+
+        .main-content {
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .info-banner {
+            background: linear-gradient(135deg, #e8f4f8 0%, #f0f8ff 100%);
+            border: 1px solid #4a9eff;
+            border-left: 4px solid #2196F3;
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .info-banner-icon {
+            font-size: 1.5rem;
+            color: #2196F3;
+        }
+
+        .info-banner-content h3 {
+            color: #1976D2;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-banner-content p {
+            color: #555;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .section-grid {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: #1f1f2e;
+            border: 1px solid #2a2a3e;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #2a2a3e;
+        }
+
+        .card-icon {
+            font-size: 1.3rem;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-label {
+            color: #b0b0b0;
+            font-size: 0.85rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-input,
+        .form-select {
+            background: #16162a;
+            border: 1px solid #2a2a3e;
+            border-radius: 6px;
+            padding: 0.75rem;
+            color: #ffffff;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #4a9eff;
+            background: #1a1a2e;
+        }
+
+        .form-input::placeholder {
+            color: #555;
+        }
+
+        .section-divider {
+            margin: 2rem 0 1.5rem 0;
+        }
+
+        .section-subtitle {
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .predict-button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #ff4757 0%, #ff6348 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 2rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .predict-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 71, 87, 0.4);
+        }
+
+        .predict-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .risk-box {
+            background: #2a2a3e;
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .risk-box h3 {
+            color: #ffa726;
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .risk-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            color: #b0b0b0;
+            font-size: 0.9rem;
+        }
+
+        .result-section {
+            margin-top: 2rem;
+        }
+
+        .prediction-high-risk {
+            background: linear-gradient(135deg, #ff4757 0%, #ff6348 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 600;
+            animation: fadeIn 0.5s;
+            border: 2px solid #ff6b6b;
+        }
+
+        .prediction-low-risk {
+            background: linear-gradient(135deg, #26de81 0%, #20bf6b 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 600;
+            animation: fadeIn 0.5s;
+            border: 2px solid #4cd137;
+        }
+
+        .alert {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffc107;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #28a745;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .input-stepper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .input-stepper input {
+            flex: 1;
+        }
+
+        .stepper-btn {
+            background: #2a2a3e;
+            border: 1px solid #3a3a4e;
+            color: #ffffff;
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .stepper-btn:hover {
+            background: #3a3a4e;
+            border-color: #4a9eff;
+        }
+
+        @media (max-width: 1200px) {
+            .section-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                display: none;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-content {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>❤️ Heart Disease Predictor</h1>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">📋 Parameter Guide</div>
+                <div class="sidebar-item"><strong>Chest Pain Types:</strong></div>
+                <div class="sidebar-item">0: Typical Angina</div>
+                <div class="sidebar-item">1: Atypical Angina</div>
+                <div class="sidebar-item">2: Non-Anginal Pain</div>
+                <div class="sidebar-item">3: Asymptomatic</div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-item"><strong>Rest ECG:</strong></div>
+                <div class="sidebar-item">0: Normal</div>
+                <div class="sidebar-item">1: ST-T Wave Abnormality</div>
+                <div class="sidebar-item">2: Left Ventricular Hypertrophy</div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-item"><strong>Slope:</strong></div>
+                <div class="sidebar-item">0: Upsloping</div>
+                <div class="sidebar-item">1: Flat</div>
+                <div class="sidebar-item">2: Downsloping</div>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-item"><strong>Thalassemia:</strong></div>
+                <div class="sidebar-item">0: Unknown</div>
+                <div class="sidebar-item">1: Fixed Defect</div>
+                <div class="sidebar-item">2: Normal Flow</div>
+                <div class="sidebar-item">3: Reversible Defect</div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="info-banner">
+                <div class="info-banner-icon">🩺</div>
+                <div class="info-banner-content">
+                    <h3>About This Tool</h3>
+                    <p>This AI-powered tool helps assess the risk of heart disease based on various medical parameters. Please consult with a healthcare professional for proper medical diagnosis and treatment.</p>
+                </div>
+            </div>
+
+            <div class="section-grid">
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-icon">📊</span>
+                            <h2 class="card-title">Patient Information</h2>
+                        </div>
+
+                        <form id="predictionForm">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="age">👤 Age</label>
+                                    <div class="input-stepper">
+                                        <input type="number" id="age" class="form-input" min="18" max="100" value="50" required>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="sex">⚧ Sex</label>
+                                    <select id="sex" class="form-select" required>
+                                        <option value="1">Male</option>
+                                        <option value="0">Female</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="cp">💔 Chest Pain Type</label>
+                                    <select id="cp" class="form-select" required>
+                                        <option value="0">Typical Angina</option>
+                                        <option value="1">Atypical Angina</option>
+                                        <option value="2">Non-Anginal Pain</option>
+                                        <option value="3">Asymptomatic</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="fbs">🍯 Fasting Blood Sugar > 120 mg/dl</label>
+                                    <select id="fbs" class="form-select" required>
+                                        <option value="0">No</option>
+                                        <option value="1">Yes</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="section-divider">
+                                <h3 class="section-subtitle">🩺 Vital Signs & Lab Results</h3>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="trestbps">🩸 Resting Blood Pressure (mmHg)</label>
+                                    <div class="input-stepper">
+                                        <button type="button" class="stepper-btn" onclick="adjustValue('trestbps', -5)">-</button>
+                                        <input type="number" id="trestbps" class="form-input" min="80" max="200" value="120" required>
+                                        <button type="button" class="stepper-btn" onclick="adjustValue('trestbps', 5)">+</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="restecg">📈 Resting ECG</label>
+                                    <select id="restecg" class="form-select" required>
+                                        <option value="0">Normal</option>
+                                        <option value="1">ST-T Wave Abnormality</option>
+                                        <option value="2">Left Ventricular Hypertrophy</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="chol">🧪 Cholesterol (mg/dl)</label>
+                                    <div class="input-stepper">
+                                        <button type="button" class="stepper-btn" onclick="adjustValue('chol', -10)">-</button>
+                                        <input type="number" id="chol" class="form-input" min="100" max="600" value="200" required>
+                                        <button type="button" class="stepper-btn" onclick="adjustValue('chol', 10)">+</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="exang">🏃 Exercise Induced Angina</label>
+                                    <select id="exang" class="form-select" required>
+                                        <option value="0">No</option>
+                                        <option value="1">Yes</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="thalach">💓 Maximum Heart Rate</label>
+                                    <div class="input-stepper">
+                                        <button type="button" class="stepper-btn" onclick="adjustValue('thalach', -5)">-</button>
+                                        <input type="number" id="thalach" class="form-input" min="60" max="220" value="150" required>
+                                        <button type="button" class="stepper-btn" onclick="adjustValue('thalach', 5)">+</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="oldpeak">📉 ST Depression</label>
+                                    <div class="input-stepper">
+                                        <button type="button" class="stepper-btn" onclick="adjustValue('oldpeak', -0.1)">-</button>
+                                        <input type="number" id="oldpeak" class="form-input" min="0" max="10" step="0.1" value="1.0" required>
+                                        <button type="button" class="stepper-btn" onclick="adjustValue('oldpeak', 0.1)">+</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-divider">
+                                <h3 class="section-subtitle">🔬 Advanced Parameters</h3>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="slope">📊 ST Slope</label>
+                                    <select id="slope" class="form-select" required>
+                                        <option value="0">Upsloping</option>
+                                        <option value="1">Flat</option>
+                                        <option value="2">Downsloping</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="thal">🫀 Thalassemia</label>
+                                    <select id="thal" class="form-select" required>
+                                        <option value="0">Unknown/Normal</option>
+                                        <option value="1">Fixed Defect</option>
+                                        <option value="2">Normal Flow</option>
+                                        <option value="3">Reversible Defect</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label" for="ca">💓 Number of Major Vessels (0-3)</label>
+                                    <select id="ca" class="form-select" required>
+                                        <option value="0">0</option>
+                                        <option value="1">1</option>
+                                        <option value="2">2</option>
+                                        <option value="3">3</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="predict-button">
+                                🎯 Analyze Heart Disease Risk
+                            </button>
+                        </form>
+
+                        <div id="resultSection" class="result-section" style="display: none;">
+                            <div class="card-header">
+                                <span class="card-icon">🎯</span>
+                                <h2 class="card-title">Prediction Results</h2>
+                            </div>
+                            <div id="predictionResult"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-icon">📋</span>
+                            <h2 class="card-title">Risk Assessment</h2>
+                        </div>
+                        <div class="risk-box">
+                            <h3>💡 Heart Health Tips</h3>
+                            <div class="risk-item">🥗 Maintain a balanced diet</div>
+                            <div class="risk-item">🏃‍♂️ Regular exercise</div>
+                            <div class="risk-item">🚭 Avoid smoking</div>
+                            <div class="risk-item">😌 Manage stress</div>
+                            <div class="risk-item">💊 Take medications as prescribed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function adjustValue(id, delta) {
+            const input = document.getElementById(id);
+            const step = parseFloat(input.step) || 1;
+            const min = parseFloat(input.min);
+            const max = parseFloat(input.max);
+            let newValue = parseFloat(input.value) + delta;
+            
+            if (!isNaN(min)) newValue = Math.max(min, newValue);
+            if (!isNaN(max)) newValue = Math.min(max, newValue);
+            
+            input.value = newValue.toFixed(step < 1 ? 1 : 0);
+        }
+
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const button = e.target.querySelector('button[type="submit"]');
+            const originalText = button.innerHTML;
+            
+            button.disabled = true;
+            button.innerHTML = '<span class="loading-spinner"></span> Analyzing...';
+            
+            const formData = {
+                age: parseInt(document.getElementById('age').value),
+                sex: parseInt(document.getElementById('sex').value),
+                cp: parseInt(document.getElementById('cp').value),
+                trestbps: parseInt(document.getElementById('trestbps').value),
+                chol: parseInt(document.getElementById('chol').value),
+                fbs: parseInt(document.getElementById('fbs').value),
+                restecg: parseInt(document.getElementById('restecg').value),
+                thalach: parseInt(document.getElementById('thalach').value),
+                exang: parseInt(document.getElementById('exang').value),
+                oldpeak: parseFloat(document.getElementById('oldpeak').value),
+                slope: parseInt(document.getElementById('slope').value),
+                ca: parseInt(document.getElementById('ca').value),
+                thal: parseInt(document.getElementById('thal').value)
+            };
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    displayResult(result);
+                } else {
+                    displayError(result.error || 'An error occurred during prediction');
+                }
+                
+            } catch (error) {
+                displayError('Failed to connect to the server. Please try again.');
+                console.error('Error:', error);
+            } finally {
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        });
+
+        function displayResult(result) {
+            const resultSection = document.getElementById('resultSection');
+            const predictionResult = document.getElementById('predictionResult');
+            
+            resultSection.style.display = 'block';
+            
+            if (result.prediction === 1) {
+                predictionResult.innerHTML = `
+                    <div class="prediction-high-risk">
+                        🚨 HIGH RISK: Heart Disease Detected<br>
+                        <small style="font-size: 0.9rem; font-weight: normal;">Please consult a cardiologist immediately</small>
+                    </div>
+                    <div class="alert alert-warning">
+                        ⚠️ <strong>Important:</strong> This is a screening tool only. Please seek immediate medical attention for proper diagnosis and treatment.
+                    </div>
+                `;
+            } else {
+                predictionResult.innerHTML = `
+                    <div class="prediction-low-risk">
+                        ✅ LOW RISK: No Heart Disease Detected<br>
+                        <small style="font-size: 0.9rem; font-weight: normal;">Continue maintaining a healthy lifestyle</small>
+                    </div>
+                    <div class="alert alert-success">
+                        ✅ <strong>Good News:</strong> Low risk detected. Continue regular check-ups and maintain a healthy lifestyle.
+                    </div>
+                `;
+            }
+            
+            resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function displayError(errorMessage) {
+            const resultSection = document.getElementById('resultSection');
+            const predictionResult = document.getElementById('predictionResult');
+            
+            resultSection.style.display = 'block';
+            predictionResult.innerHTML = `
+                <div class="alert alert-warning">
+                    ❌ <strong>Error:</strong> ${errorMessage}
+                </div>
+            `;
+            
+            resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        document.querySelectorAll('input, select').forEach(element => {
+            element.addEventListener('invalid', (e) => {
+                e.target.style.borderColor = '#ff4757';
+            });
+            
+            element.addEventListener('input', (e) => {
+                e.target.style.borderColor = '#2a2a3e';
+            });
+        });
+    </script>
+</body>
+</html>
