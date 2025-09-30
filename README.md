@@ -1,7 +1,5 @@
 # ❤️ Heart Disease Predictor
 
-<div align="center">
-
 **AI-powered web application for heart disease risk assessment**
 
 </div>
@@ -80,9 +78,5 @@ Heart Disease Predictor is a machine learning-powered web application that asses
 - 📊 **Data Analysis** - Understanding correlations between medical parameters and heart disease
 
 ---
-
-<div align="center">
-
-**Made with ❤️ for better healthcare**
 
 </div>
